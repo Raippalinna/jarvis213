@@ -1,0 +1,59 @@
+name: JARVIS Agent Orchestra read-only preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      goal:
+        description: 'Non-sensitive goal to plan; never put secrets here'
+        type: string
+        required: true
+        default: 'Improve the main JARVIS system'
+      creative:
+        description: 'Include creative draft role (not executed)'
+        type: boolean
+        required: false
+        default: false
+      notifications:
+        description: 'Include notification role (not executed)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate deterministic agent graph and verify no execution
+        env:
+          JARVIS_PREVIEW_GOAL: ${{ inputs.goal }}
+          JARVIS_PREVIEW_CREATIVE: ${{ inputs.creative }}
+          JARVIS_PREVIEW_NOTIFY: ${{ inputs.notifications }}
+          DRY_RUN: '1'
+          JARVIS_NOTIFY: '0'
+        run: |
+          python scripts/agent_preview_offline.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("agent-preview.json").read_text(encoding="utf-8"))
+          assert data["execution_enabled"] is False
+          assert data["production_verified"] is False
+          assert all(step["status"] == "pending" for step in data["steps"].values())
+          PY
+      - name: Preserve only safe preview metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-agent-preview
+          path: agent-preview.json
+          retention-days: 3
+          if-no-files-found: error
