@@ -1,0 +1,109 @@
+name: JARVIS Kodkvalitet — komplett nyckelfri kontroll
+
+# Implementerar Notion-skillen "jarvis-kodkvalitet" som ett körbart,
+# obligatoriskt kvalitetsutfall för kod-PR:er. Inga live-API:er anropas.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jarvis-code-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python – full svit, offline
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      JARVIS_NOTIFY: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Installera testverktyg
+        run: python -m pip install -r requirements.txt pytest pytest-subtests pytest-socket
+      - name: Kör hela Python-sviten utan nätverksåtkomst
+        run: env -u PYTHONPATH python -m pytest tests -q --disable-socket --allow-unix-socket --junitxml=pytest-results.xml
+      - name: Syntaxkontroll för JARVIS-kärnan
+        if: success()
+        run: python -m compileall -q src scripts jarvis_cloud.py
+      - name: Skapa begränsad rapport utan feltext eller hemligheter
+        if: always()
+        run: python scripts/ci_pytest_safe_report.py
+      - name: Spara testbevis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-code-quality-python
+          path: pytest-safe-report.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  javascript:
+    name: JavaScript – isolerade API-tester
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Kör lokala API-fixtures utan nätverksanrop
+        run: node --test tests/*.mjs
+
+  dashboard:
+    name: Dashboard – typkontroll och produktionsbygge
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: apps/dashboard
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/dashboard/package-lock.json
+      - name: Installera låsta beroenden utan scripts
+        run: npm ci --ignore-scripts
+      - name: Bygg (inklusive TypeScript typkontroll)
+        run: npm run build
+
+  quality-gate:
+    name: Samlad kvalitetsgrind (ej driftintyg)
+    if: always()
+    needs: [python, javascript, dashboard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      PYTHON_RESULT: ${{ needs.python.result }}
+      JAVASCRIPT_RESULT: ${{ needs.javascript.result }}
+      DASHBOARD_RESULT: ${{ needs.dashboard.result }}
+    steps:
+      - name: Underkänn fel, avbrutet eller överhoppat deltest
+        run: |
+          echo "Python: $PYTHON_RESULT"
+          echo "JavaScript: $JAVASCRIPT_RESULT"
+          echo "Dashboard: $DASHBOARD_RESULT"
+          if [ "$PYTHON_RESULT" != "success" ] || \
+             [ "$JAVASCRIPT_RESULT" != "success" ] || \
+             [ "$DASHBOARD_RESULT" != "success" ]; then
+            echo "JARVIS KODKVALITET: BLOCKERAD"
+            exit 1
+          fi
+          echo "JARVIS KODKVALITET: OFFLINE PASS"
+          echo "LIVE API, Perplexity OAuth, backendbehörigheter och verklig drift: EJ TESTADE"
