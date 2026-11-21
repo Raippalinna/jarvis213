@@ -1,0 +1,20 @@
+name: JARVIS Daily Statuscheck
+
+on:
+  schedule:
+    # 07:00 Europe/Stockholm = 05:00 UTC (sommartid) / 06:00 UTC (vintertid)
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: jarvis-cron-daily
+  cancel-in-progress: false
+
+jobs:
+  run:
+    uses: ./.github/workflows/jarvis-cloud.yml
+    with:
+      task: 'Daglig statuscheck utifrån källtexten i MINNE OCH KONTEXT: (1) Namnge dagens största flaskhals över alla initiativ, (2) en konkret handling att göra idag som ger mest hävstång, (3) något i källtexten som ändrats sedan igår och kräver reaktion – finns inget registrerat, skriv exakt det. Kort och skarpt — max 400 ord.'
+      tier: 'LOW'
+      notion_page_id: '3ca66d43-c107-813b-90f3-daf5b5a42333'
+    secrets: inherit
