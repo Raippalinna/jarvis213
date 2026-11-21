@@ -1,0 +1,30 @@
+diff --git a/src/jarvis/core/supervisor.py b/src/jarvis/core/supervisor.py
+--- a/src/jarvis/core/supervisor.py
++++ b/src/jarvis/core/supervisor.py
+@@ -208,5 +208,5 @@
+     body = str(text or "").strip()
+-    if not body or _is_error_answer(body):
++    if not body or body == _EMPTY_MODEL_ANSWER or _is_error_answer(body):
+         return 0.0
+     low = body.lower()
+     quantified = any(q in low for q in _QUANTIFIERS)
+diff --git a/tests/test_empty_model_quality.py b/tests/test_empty_model_quality.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_empty_model_quality.py
+@@ -0,0 +1,15 @@
++"""Tomma modellsvar ska ha kvalitet noll."""
++import pytest
++from jarvis.core import supervisor
++
++@pytest.mark.parametrize("answer", [
++    "(tomt svar från modellen)", "  (tomt svar från modellen)\n",
++    "", " \n\t", "[JARVIS-fel] test",
++])
++def test_empty_model_answer_quality_zero(answer):
++    assert supervisor._quality_score(answer, "Status?") == 0.0
++
++def test_normal_answer_quality_unchanged():
++    assert supervisor._quality_score("Ett riktigt svar", "Status?") == 0.8
++def test_quantified_answer_quality_unchanged():
++    assert supervisor._quality_score("Kostnad 10 kr", "Status?") == 0.85

@@ -1,0 +1,45 @@
+name: JARVIS Approval ACL checker — keyless tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/security/approval_acl_snapshot.sql"
+      - "scripts/security/check_approval_acl.py"
+      - "tests/test_approval_acl_preflight.py"
+      - ".github/workflows/jarvis-approval-acl-offline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acl-checker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Execute isolated ACL regression cases
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import inspect
+          from pathlib import Path
+          file = Path("tests/test_approval_acl_preflight.py").resolve()
+          spec = importlib.util.spec_from_file_location("acl_preflight_tests", file)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          tests = [
+              (name, fn)
+              for name, fn in inspect.getmembers(module, inspect.isfunction)
+              if name.startswith("test_")
+          ]
+          if len(tests) < 6:
+              raise AssertionError(f"expected at least 6 regression cases, got {len(tests)}")
+          for name, test in tests:
+              test()
+              print(f"PASS: {name}")
+          print("SYNTHETIC ACL CHECKER TESTS PASSED. No live database was inspected.")
+          PY
