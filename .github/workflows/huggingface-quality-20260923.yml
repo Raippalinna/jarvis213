@@ -1,0 +1,38 @@
+name: JARVIS HF quality comparison 20260923
+run-name: HF-QUALITY-20260923-QWEN235B-NSCALE
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval:
+        description: Exact approved pilot identifier
+        required: true
+        type: string
+      approved_sha:
+        description: Exact reviewed commit SHA
+        required: true
+        type: string
+      guard_checked_at:
+        description: UTC time when the controller read autonomy_enabled=true
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hf-quality-20260923
+  cancel-in-progress: false
+
+jobs:
+  single_synthetic_request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: One approved synthetic request, no retry or fallback
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python3 -m scripts.huggingface_quality_20260923
