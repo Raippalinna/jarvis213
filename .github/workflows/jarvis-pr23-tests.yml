@@ -1,0 +1,55 @@
+name: Jarvis PR23 isolerade tester
+on:
+  push:
+    branches:
+      - fix/memory-skip-error-turns-20261031
+    paths:
+      - '.github/workflows/jarvis-pr23-tests.yml'
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'requirements.txt'
+permissions:
+  contents: read
+  pull-requests: write
+concurrency:
+  group: jarvis-pr23-tests
+  cancel-in-progress: true
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      JARVIS_NOTIFY: '0'
+      PYTHONPATH: src
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Installera testberoenden utan produktionsnycklar
+        id: install
+        run: python -m pip install -r requirements.txt pytest pytest-subtests pytest-socket
+      - name: Visa exakt testad commit
+        run: git rev-parse HEAD
+      - name: Kör hela Python-testsviten med nätverk blockerat
+        id: tests
+        run: python -m pytest tests -q --disable-socket --allow-unix-socket --junitxml=pytest-results.xml
+      - name: Extrahera begränsad diagnostik utan testinnehåll
+        if: always()
+        run: python scripts/ci_pytest_safe_report.py
+      - name: Rapportera diagnostik i befintlig PR 23
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.existsSync('pytest-safe-report.json') ? JSON.parse(fs.readFileSync('pytest-safe-report.json', 'utf8')) : {report_missing: true};
+            const body = ['Jarvis CI-diagnostik (ingen driftverifiering)', 'Commit: ' + context.sha, 'Installation: ' + process.env.INSTALL_OUTCOME, 'Pytest: ' + process.env.TEST_OUTCOME, 'Run: ' + context.runId, '```json', JSON.stringify(report, null, 2), '```'].join('\n');
+            await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: 23, body});

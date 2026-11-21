@@ -1,0 +1,14 @@
+# Välj AI-arm
+
+Läs tabellen när en konkret uppgift ska fördelas. Statusuppgifter är daterade observationer, inte nya driftbevis.
+
+| Behov | Använd | Kommentar |
+|---|---|---|
+| Strategiskt beslut, arkitekturval, motstridiga källor, "jämför modeller" | `load_skill("model-council")` | Endast när frågan är konkret och modellråd efterfrågats. Tre leverantörer som standard; jämför bevis, inte självsäkerhet. |
+| Ny eller trasig Jarvis-/BTF-skill, "gör en skill", "fixa skillen" | `load_skill("create-skill")` | Inbyggda skills ändras inte i projektet. Återanvänd dem genom hänvisning; en egen variant är separat och får inte framstå som en ändrad inbyggd skill. |
+| Inloggad webbtjänst utan connector (ChatGPT, cursor.com, Codex cloud-UI), formulär i användarens sessioner | Läs Jarvis connector-maps Comet-fallback och aktuell `browser-use`-skill | Kräver vald dator online med browser bridge. Bekräfta före inloggning, betalning, tredjepartsbehörighet, externa utskick. |
+| Filer på Lenovo (läs/skriv i valda mappar), flytta fil sandbox↔dator | `select_device` → `pplx_device__filesystem` / `pplx_device__desktop_filesystem` | PowerShell och lokal subagent kräver provisionerad Windows-sandbox respektive lokal modell i Perplexity-appen; annars rapportera "ej provisionerad", försök inte runt. |
+| Kodändring i Jarvis-repo som ska köras isolerat och komma som PR | Codex cloud (chatgpt.com/codex/cloud) via lokal webbläsare, eller GPT-modell som subagent när delegering efterfrågats | Codex cloud har GitHub-miljöer för jarvis-omega-v2, jarvis-core, boost-sparkle-engine m.fl. (observerat 2026-09-25). Granska PR:en via `gh`; merga aldrig till main utan godkännande. |
+| Samma modellfamilj som ChatGPT för text/analys | Vid begärd delegering: välj ett GPT-modell-ID som faktiskt finns i sessionens agentverktyg | Aktuell tillgänglighet avgör. ChatGPT-webben kan vara relevant för användarens minne, GPT:er, Codex-UI eller abonnemangsinkluderad användning; den är inte en gratis API-backend. |
+| IDE-agent lokalt (Cursor) | Observerat inloggad, GitHub+Linear kopplade, men Cloud Agents kräver Pro | Använd inte som arm utan verifierad plan och kapacitet; se `status-och-aktivering.md`. Inga abonnemangsändringar utan beslut. |
+| Ändring i en Lovable-app (Boost Sparkle Engine, Pintox/project-canvas, Legal Insight Hub, chic-ai-boutique, green-system-pro, sentinel-alert) | GitHub-repot är bryggan: branch + PR via `gh`; Lovable synkar tvåvägs. UI-/promptarbete i Lovable-editorn via lokal webbläsare med användarens inloggning på lovable.dev. | Skriv aldrig om pushad historik (Lovable förlorar projekthistorik). Merge till kopplad branch och DB-migrationer = L2. TITANOS/Boost Sparkle Engine kör på Lovable Cloud (`qkwmgvlqqagjozubnrlc`, Edge Functions deployas av Lovable); JARVIS Prime är separat (`fzmnqvmfilqizzftphbt`). Flytta inget mellan dem utan L2-godkännande. |
