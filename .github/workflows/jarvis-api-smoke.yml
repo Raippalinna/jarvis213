@@ -1,0 +1,61 @@
+name: Jarvis nyckelfritt API-test
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/dashboard-env-example-20261101]
+    paths: ['.github/workflows/jarvis-api-smoke.yml']
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Direkta OPTIONS och POST utan autentiseringsnyckel
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const url='https://fzmnqvmfilqizzftphbt.supabase.co/functions/v1/jarvis-dashboard-api';
+          const origin='https://rickyjarvis.vercel.app';
+          const cases=[
+            {name:'preflight',method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type,x-jarvis-key'}},
+            {name:'health_without_key',method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({action:'health'})},
+            {name:'state_without_key',method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({action:'state'})}
+          ];
+          const results=await Promise.all(cases.map(async c=>{
+            const started_at=new Date().toISOString();
+            try {
+              const r=await fetch(url,{method:c.method,headers:c.headers,body:c.body,redirect:'error',signal:AbortSignal.timeout(15000)});
+              const raw=await r.text();
+              let unauthorized_json=false;
+              try { unauthorized_json=JSON.parse(raw)?.error==='Unauthorized'; } catch {}
+              const allow_origin=r.headers.get('access-control-allow-origin');
+              const allow_methods=r.headers.get('access-control-allow-methods');
+              const allow_headers=r.headers.get('access-control-allow-headers');
+              const cors_ok=['*',origin].includes(allow_origin);
+              const pass=c.method==='OPTIONS' ? r.ok&&cors_ok&&/x-jarvis-key/i.test(allow_headers||'')&&/content-type/i.test(allow_headers||'')&&/POST/.test(allow_methods||'') : r.status===401&&unauthorized_json&&cors_ok;
+              return {test:c.name,started_at,finished_at:new Date().toISOString(),status:r.status,content_type:r.headers.get('content-type'),allow_origin,allow_methods,allow_headers,unauthorized_json,pass};
+            } catch(e) {
+              return {test:c.name,started_at,finished_at:new Date().toISOString(),pass:false,error_type:e.name,error_code:e.cause?.code||null};
+            }
+          }));
+          const report={scope:'Nyckelfritt test. Inte verifiering av inloggad dataåtkomst.',results};
+          fs.writeFileSync('api-smoke-report.json',JSON.stringify(report,null,2));
+          console.log(JSON.stringify(report,null,2));
+          if(results.some(r=>!r.pass)) process.exitCode=1;
+          NODE
+      - name: Spara nyckelfri rapport som Actions-artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-api-smoke-report
+          path: api-smoke-report.json
+          if-no-files-found: warn
+          retention-days: 7
