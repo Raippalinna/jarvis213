@@ -1,0 +1,313 @@
+# JARVIS providers.yaml — leverantörs- och modellkatalog.
+#
+# Redigeras av Frugality-agentens veckovisa audit (frugality/audit.py).
+# Struktur: varje entry beskriver en API-tillgänglig kanal Jarvis kan anropa
+# direkt. Manuella kanaler (M365 Copilot, ChatGPT Go) hanteras separat i
+# handoff.yaml eftersom de kräver att Ricky agerar själv i UI.
+
+version: 3
+updated_at: "2026-09-26"
+
+# ---------------------------------------------------------------------------
+# API-tillgängliga leverantörer (kan anropas autonomt)
+# ---------------------------------------------------------------------------
+providers:
+
+  groq:
+    display_name: "Groq (gratis)"
+    base_url: "https://api.groq.com/openai/v1"
+    api_key_env: "GROQ_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 30
+    latency_p50_ms: 250
+    trains_on_data: true       # dolt läckagerisk
+    models:
+      - id: "openai/gpt-oss-120b"        # gratis: 30 RPM / 1 000 RPD / 8K TPM (console.groq.com/docs/rate-limits)
+        class: "mid"
+        quality_index: 0.74
+      - id: "qwen/qwen3.8-27b"           # gratis: 30 RPM / 1 000 RPD
+        class: "mid"
+        quality_index: 0.72
+      - id: "llama-3.3-70b-versatile"    # legacy, kan vara borttagen
+        class: "mid"
+        quality_index: 0.70
+
+  cerebras:
+    display_name: "Cerebras (gratis)"
+    base_url: "https://api.cerebras.ai/v1"
+    api_key_env: "CEREBRAS_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 30
+    latency_p50_ms: 120
+    trains_on_data: false
+    models:
+      - id: "llama-3.3-70b"
+        class: "mid"
+        quality_index: 0.78
+
+  google_ai:
+    display_name: "Google AI Studio (gratis)"
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai"
+    api_key_env: "GOOGLE_AI_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 15
+    latency_p50_ms: 900
+    trains_on_data: true          # gratisnivån används för produktförbättring (ai.google.dev pricing)
+    models:
+      - id: "gemini-3.8-flash"           # AI Studio gratis (Flash-nivå); betald $0.75/$3.75 t.o.m. 2026-12-31, dubblas 2027-01-01
+        class: "mid"
+        quality_index: 0.86
+      - id: "gemini-3.1-flash-lite"      # AI Studio gratis; betald $0.25/$1.50
+        class: "low"
+        quality_index: 0.76
+      - id: "gemini-2.5-flash"           # legacy
+        class: "mid"
+        quality_index: 0.80
+
+  comet_low:
+    display_name: "Comet (billig)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.0015
+    cost_per_1k_output_sek: 0.006
+    rate_limit_rpm: 200
+    latency_p50_ms: 1500
+    trains_on_data: false
+    models:
+      - id: "gpt-4o-mini"
+        class: "low"
+        quality_index: 0.72
+
+  comet_med:
+    display_name: "Comet (mellan)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.030
+    cost_per_1k_output_sek: 0.150
+    rate_limit_rpm: 100
+    latency_p50_ms: 3500
+    trains_on_data: false
+    models:
+      - id: "claude-3-5-sonnet-20241022"
+        class: "med"
+        quality_index: 0.91
+      - id: "gpt-4o"
+        class: "med"
+        quality_index: 0.88
+
+  comet_high:
+    display_name: "Comet (premium)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.150
+    cost_per_1k_output_sek: 0.750
+    rate_limit_rpm: 30
+    latency_p50_ms: 8000
+    trains_on_data: false
+    models:
+      - id: "claude-opus-4-20250514"
+        class: "high"
+        quality_index: 0.96
+      - id: "o1-preview"
+        class: "high-reasoning"
+        quality_index: 0.95
+
+  # --- v3 (2026-09-26): nya leverantörer, OpenAI-kompatibla endpoints. Hoppas över automatiskt
+  #     när API-nyckeln saknas (TierRouter regel 1), så befintliga Comet-kedjor fungerar tills nycklar finns.
+  #     Priser: leverantörernas prissidor 2026-09-26, USD/1M → SEK/1k med kurs 9,4 (antagande).
+  zai:
+    display_name: "Z.AI GLM"
+    base_url: "https://api.z.ai/api/paas/v4"
+    api_key_env: "ZAI_API_KEY"
+    cost_per_1k_input_sek: 0.00141     # GLM-5.3-Flash $0.15/1M (docs.z.ai/guides/overview/pricing)
+    cost_per_1k_output_sek: 0.0047    # $0.50/1M
+    rate_limit_rpm: 60
+    latency_p50_ms: 1200
+    trains_on_data: false
+    models:
+      - id: "glm-5.3-flash"
+        class: "mid"
+        quality_index: 0.80
+
+  zai_pro:
+    display_name: "Z.AI GLM-5.3"
+    base_url: "https://api.z.ai/api/paas/v4"
+    api_key_env: "ZAI_API_KEY"
+    cost_per_1k_input_sek: 0.01316        # $1.40/1M
+    cost_per_1k_output_sek: 0.04136       # $4.40/1M
+    rate_limit_rpm: 60
+    latency_p50_ms: 3500
+    trains_on_data: false
+    models:
+      - id: "glm-5.3"
+        class: "high"
+        quality_index: 0.90
+
+  zai_free:
+    display_name: "Z.AI GLM-4.7-Flash (gratis)"
+    base_url: "https://api.z.ai/api/paas/v4"
+    api_key_env: "ZAI_API_KEY"
+    cost_per_1k_input_sek: 0.0            # GLM-4.7-Flash: input/output/cache gratis (docs.z.ai/guides/overview/pricing)
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 30
+    latency_p50_ms: 1200
+    trains_on_data: false
+    models:
+      - id: "glm-4.7-flash"
+        class: "free"
+        quality_index: 0.72
+
+  deepseek:
+    display_name: "DeepSeek (off-peak 50 %)"
+    base_url: "https://api.deepseek.com"
+    api_key_env: "DEEPSEEK_API_KEY"
+    cost_per_1k_input_sek: 0.00282     # V4.1 Flash peak $0.30/1M; off-peak $0.15 (api-docs.deepseek.com)
+    cost_per_1k_output_sek: 0.01128    # peak $1.20/1M; off-peak $0.60
+    rate_limit_rpm: 60
+    latency_p50_ms: 2500
+    trains_on_data: false
+    models:
+      - id: "deepseek-flash"             # DeepSeek-V4.1-Flash
+        class: "mid-reasoning"
+        quality_index: 0.84
+      - id: "deepseek-v4-pro"            # $1.32/$3.96 peak, $0.66/$1.98 off-peak
+        class: "high-reasoning"
+        quality_index: 0.90
+
+  moonshot:
+    display_name: "Moonshot Kimi"
+    base_url: "https://api.moonshot.ai/v1"
+    api_key_env: "MOONSHOT_API_KEY"
+    cost_per_1k_input_sek: 0.00893     # Kimi K2.6 $0.95/1M
+    cost_per_1k_output_sek: 0.0376    # $4.00/1M
+    rate_limit_rpm: 60
+    latency_p50_ms: 3000
+    trains_on_data: false
+    models:
+      - id: "kimi-k2.6"
+        class: "mid"
+        quality_index: 0.87
+
+  openrouter_free:
+    display_name: "OpenRouter :free"
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_env: "OPENROUTER_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 20                    # 20 RPM, 50 RPD (1 000 RPD efter $10 köp)
+    latency_p50_ms: 3000
+    trains_on_data: true                  # gratisrutter kan logga/träna – aldrig känslig data
+    models:
+      - id: "nvidia/nemotron-3-ultra:free"
+        class: "free"
+        quality_index: 0.72
+      - id: "qwen/qwen3.8-27b:free"
+        class: "free"
+        quality_index: 0.70
+
+  openai:
+    display_name: "OpenAI direkt"
+    base_url: "https://api.openai.com/v1"
+    api_key_env: "OPENAI_API_KEY"
+    cost_per_1k_input_sek: 0.0188     # GPT-6 Sol $2/$10 (developers.openai.com/api/docs/pricing)
+    cost_per_1k_output_sek: 0.094
+    rate_limit_rpm: 60
+    latency_p50_ms: 4000
+    trains_on_data: false
+    models:
+      - id: "gpt-6-luna"                 # $0.10/$0.50 – billig frontier-mini
+        class: "low"
+        quality_index: 0.80
+      - id: "gpt-6-sol"
+        class: "high"
+        quality_index: 0.94
+
+# ---------------------------------------------------------------------------
+# Tier-mappning — kostnadsdimmern (FREE/LOW/MED/HIGH)
+# Frugality-agenten läser detta för att välja billigaste ADEKVATA väg.
+# Ordningen i chain = fallback-ordning vid fel/rate-limit.
+# ---------------------------------------------------------------------------
+tiers:
+
+  FREE:
+    quality_floor: 0.60
+    max_cost_per_call_sek: 0.10
+    sensitivity_max: "public"       # aldrig känslig data i FREE
+    chain:
+      - provider: zai_free
+        model: "glm-4.7-flash"
+      - provider: groq
+        model: "openai/gpt-oss-120b"
+      - provider: google_ai
+        model: "gemini-3.8-flash"
+      - provider: openrouter_free
+        model: "nvidia/nemotron-3-ultra:free"
+      - provider: cerebras
+        model: "llama-3.3-70b"
+      - provider: comet_low            # sista utväg om alla gratis 429
+        model: "gpt-4o-mini"
+
+  LOW:
+    quality_floor: 0.75
+    max_cost_per_call_sek: 1.00
+    sensitivity_max: "internal"
+    chain:
+      - provider: zai
+        model: "glm-5.3-flash"
+      - provider: deepseek
+        model: "deepseek-flash"
+      - provider: openai
+        model: "gpt-6-luna"
+      - provider: google_ai
+        model: "gemini-3.1-flash-lite"
+      - provider: comet_low
+        model: "gpt-4o-mini"
+
+  MED:
+    quality_floor: 0.85
+    max_cost_per_call_sek: 10.00
+    sensitivity_max: "confidential"
+    chain:
+      - provider: deepseek
+        model: "deepseek-v4-pro"
+      - provider: moonshot
+        model: "kimi-k2.6"
+      - provider: zai_pro
+        model: "glm-5.3"
+      - provider: google_ai
+        model: "gemini-3.8-flash"
+      - provider: openai
+        model: "gpt-6-sol"
+      # Comet-kedjan behålls som fallback (verifierad i drift 2026-09)
+      - provider: comet_med
+        model: "gpt-4o"
+      - provider: comet_med
+        model: "claude-3-5-sonnet-20241022"
+
+  HIGH:
+    quality_floor: 0.90
+    max_cost_per_call_sek: 50.00
+    sensitivity_max: "secret"
+    chain:
+      - provider: openai
+        model: "gpt-6-sol"
+      - provider: comet_high
+        model: "claude-opus-4-20250514"
+      - provider: comet_high
+        model: "o1-preview"
+      - provider: comet_med
+        model: "gpt-4o"
+# ---------------------------------------------------------------------------
+# Månadsbudget (Frugality tvingar FREE när tröskel överskrids)
+# ---------------------------------------------------------------------------
+budget:
+  monthly_cap_sek: 200
+  soft_alert_pct: 50        # mjukt larm (Slack #titanos-health), HIGH kräver motivering
+  hard_alert_pct: 75        # hårt larm: rutinjobb MED → LOW, modellråd pausas
+  force_free_pct: 90        # circuit breaker: tvinga FREE (Frugality-veto i TierRouter)
+  # FÖRBERETT, ej läst av kod ännu: när alla betalda nycklar ger 402/429 (krediter slut)
+  # ska routern stanna i FREE-kedjan och posta ett larm i stället för att stoppa statuscheckar.
+  credits_exhausted_mode: "FREE_ONLY"
