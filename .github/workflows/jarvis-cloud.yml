@@ -1,0 +1,95 @@
+name: JARVIS Cloud API
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task att köra'
+        required: true
+        default: 'Ge veckans ekosystem-briefing'
+        type: string
+      tier:
+        description: 'Kostnadsdimmer: FREE, LOW, MED eller HIGH'
+        required: false
+        default: 'LOW'
+        type: choice
+        options: [FREE, LOW, MED, HIGH]
+      notion_page_id:
+        description: 'Notion page ID att posta resultat till (valfritt)'
+        required: false
+        type: string
+  repository_dispatch:
+    types: [jarvis-run]
+  workflow_call:
+    inputs:
+      task:
+        required: true
+        type: string
+      tier:
+        required: false
+        type: string
+        default: 'LOW'
+      notion_page_id:
+        required: false
+        type: string
+
+concurrency:
+  group: jarvis-cloud
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+
+      - name: Resolve inputs
+        id: inp
+        env:
+          CALL_INPUTS_JSON: ${{ toJSON(inputs) }}
+        run: python scripts/resolve_inputs.py
+
+      - name: Run JARVIS
+        env:
+          TASK: ${{ steps.inp.outputs.task }}
+          JARVIS_TIER: ${{ steps.inp.outputs.tier }}
+          NOTION_PAGE_ID: ${{ steps.inp.outputs.notion_page_id }}
+          # --- Provider-nycklar (alla valfria; tomma = hoppa i chain) ---
+          COMET_API_KEY: ${{ secrets.COMET_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          # --- Minne (Supabase pgvector) ---
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # --- Notion Control Room ---
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_LOG_PAGE_ID: ${{ secrets.NOTION_LOG_PAGE_ID }}
+          NOTION_DB_BESLUTSLOGG: ${{ secrets.NOTION_DB_BESLUTSLOGG }}
+          NOTION_DB_INITIATIV: ${{ secrets.NOTION_DB_INITIATIV }}
+          NOTION_DB_RADAR: ${{ secrets.NOTION_DB_RADAR }}
+          # --- Slack-alerts ---
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_USER_ID: ${{ secrets.SLACK_USER_ID }}
+        run: python jarvis_cloud.py
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-result-${{ github.run_id }}
+          path: |
+            result.json
+            result.md
+          if-no-files-found: warn
+          retention-days: 30
