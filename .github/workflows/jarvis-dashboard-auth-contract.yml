@@ -1,0 +1,27 @@
+name: JARVIS dashboard – säker backendautentisering (offline)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/functions/jarvis-dashboard-api/index.ts"
+      - "tests/test_dashboard_auth_contract.mjs"
+      - ".github/workflows/jarvis-dashboard-auth-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Offline-regression – inga API-anrop eller secrets
+        run: node --test tests/test_dashboard_auth_contract.mjs
