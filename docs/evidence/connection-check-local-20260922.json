@@ -1,0 +1,28 @@
+{
+  "state": "tested_locally_not_deployed",
+  "production_approval_received": false,
+  "production_base_commit": "e177f8fbfacedb85bc8cb6522a33fb5de5021ec9",
+  "existing_reliability_pr_merged": false,
+  "function": "jarvis-comet",
+  "project_ref": "fzmnqvmfilqizzftphbt",
+  "original_source_sha256": "00ae20b8e39d2550fe336a424794c57f45b6c2be13cb28618c6cd62e436fe40c",
+  "candidate_source_sha256": "e579d8656fad3859638d243686bb726a95f4d8226118a3aabe408fe8f5f39187",
+  "edge_fixture_count": 45,
+  "edge_fixtures_passed": 45,
+  "python_test_count": 22,
+  "python_tests_passed": 22,
+  "real_network_requests_during_local_tests": 0,
+  "real_credentials_used_in_local_tests": false,
+  "automatic_fallback_or_retry": false,
+  "normal_production_runner_modified": false,
+  "model_inference_requests": 0,
+  "new_purchases": 0,
+  "proposed_check_id": "cc62340c-98bc-409b-9a40-6523e1eade84",
+  "scope": "one_isolated_repository_dispatch_followed_by_read_only_hugging_face_identity_and_catalog_checks",
+  "success_does_not_prove": [
+    "normal_jarvis_task_execution",
+    "paid_inference",
+    "hugging_face_enabled_as_production_model_provider",
+    "direct_browser_bookmark_authentication"
+  ]
+}

@@ -1,0 +1,4 @@
+project_id = "fzmnqvmfilqizzftphbt"
+
+[functions.jarvis-kpi-snapshot]
+verify_jwt = true
