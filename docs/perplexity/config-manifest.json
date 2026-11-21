@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "purpose": "Offline validation of proposed text. This manifest does not prove settings were saved.",
+  "fields": [
+    {"id": "personal_instructions", "scope": "user", "path": "docs/perplexity/personal-instructions.txt"},
+    {"id": "brain_instructions", "scope": "user", "path": "docs/perplexity/brain-instructions.txt"},
+    {"id": "project_instructions", "scope": "project", "path": "docs/project-instructions.md"},
+    {"id": "project_summary_instructions", "scope": "project", "path": "docs/perplexity/project-summary-instructions.txt"}
+  ]
+}

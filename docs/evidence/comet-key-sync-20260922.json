@@ -1,0 +1,56 @@
+{
+  "project_ref": "fzmnqvmfilqizzftphbt",
+  "function": "jarvis-comet",
+  "endpoint": "https://fzmnqvmfilqizzftphbt.supabase.co/functions/v1/jarvis-comet",
+  "explicit_user_approval_at": "2026-09-22T15:26:00+02:00",
+  "approved_change": "replace_and_synchronize_only_endpoint_key_in_supabase_and_personal_computer_vault",
+  "supabase_secret_name": "JARVIS_ENDPOINT_KEY",
+  "supabase_secret_saved_at_utc": "2026-09-22T13:30:52Z",
+  "computer_credential_name": "Jarvis Comet Endpoint",
+  "computer_credential_scope": "user",
+  "authentication_header": "x-jarvis-key",
+  "unrelated_router_credential_changed": false,
+  "secret_values_in_evidence": false,
+  "old_server_value_read": false,
+  "production_function_version": 6,
+  "verify_jwt": false,
+  "production_source_matches_original": true,
+  "production_source_sha256": "00ae20b8e39d2550fe336a424794c57f45b6c2be13cb28618c6cd62e436fe40c",
+  "temporary_diagnostic_present": false,
+  "checks": [
+    {
+      "name": "saved_credential_accepted",
+      "method": "GET",
+      "query_parameters": false,
+      "request_body": false,
+      "response_body_discarded": true,
+      "http_status": 200,
+      "tls_verify_result": 0,
+      "server_log_timestamp_utc": "2026-09-22T17:31:57.574000Z",
+      "server_function_version": 6
+    },
+    {
+      "name": "missing_credential_rejected",
+      "method": "GET",
+      "query_parameters": false,
+      "request_body": false,
+      "response_body_discarded": true,
+      "http_status": 401,
+      "tls_verify_result": 0,
+      "server_log_timestamp_utc": "2026-09-22T17:33:13.069000Z",
+      "server_function_version": 6
+    }
+  ],
+  "github_dispatches": 0,
+  "jarvis_tasks_submitted": 0,
+  "model_inference_requests": 0,
+  "purchases": 0,
+  "main_branch_modified": false,
+  "final_state": "computer_to_jarvis_authentication_verified",
+  "not_verified_by_these_checks": [
+    "direct_browser_shortcut",
+    "supabase_to_github_repository_dispatch",
+    "end_to_end_jarvis_task",
+    "hugging_face_inference"
+  ]
+}

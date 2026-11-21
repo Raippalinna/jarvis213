@@ -1,0 +1,153 @@
+name: JARVIS Cloud API
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task att köra'
+        required: true
+        default: 'Ge veckans ekosystem-briefing'
+        type: string
+      tier:
+        description: 'Kostnadsdimmer: FREE, LOW, MED eller HIGH'
+        required: false
+        default: 'LOW'
+        type: choice
+        options: [FREE, LOW, MED, HIGH]
+      provider:
+        description: 'Modellprofil. Hugging Face kräver separat godkänd och aktiverad konfiguration.'
+        required: false
+        default: 'default'
+        type: choice
+        options: [default, huggingface]
+      notion_page_id:
+        description: 'Notion page ID att posta resultat till (valfritt)'
+        required: false
+        type: string
+      verify_huggingface:
+        description: 'Läsande HF-nyckeltest; kör INTE Jarvis, modeller, minne eller utskick'
+        required: false
+        default: false
+        type: boolean
+  repository_dispatch:
+    types: [jarvis-run]
+  workflow_call:
+    inputs:
+      task:
+        required: true
+        type: string
+      tier:
+        required: false
+        type: string
+        default: 'LOW'
+      notion_page_id:
+        required: false
+        type: string
+
+concurrency:
+  group: jarvis-cloud
+  cancel-in-progress: false
+
+jobs:
+  verify_huggingface:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_huggingface }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify Hugging Face identity and public catalog only
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_EXPECTED_USERNAME: rickyraippalinna
+        run: python scripts/huggingface_preflight.py
+
+  execute:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.verify_huggingface) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+
+      - name: Resolve inputs
+        id: inp
+        env:
+          CALL_INPUTS_JSON: ${{ toJSON(inputs) }}
+        # Read user text as JSON data, never interpolate it into shell source.
+        run: python scripts/resolve_inputs.py
+
+      - name: Read public Hugging Face price catalog, no inference
+        if: ${{ steps.inp.outputs.provider == 'huggingface' && vars.JARVIS_ENABLE_HUGGINGFACE == '1' }}
+        run: python scripts/huggingface_catalog.py --output runtime/huggingface-catalog.json
+
+      - name: Run JARVIS
+        env:
+          TASK: ${{ steps.inp.outputs.task }}
+          JARVIS_TIER: ${{ steps.inp.outputs.tier }}
+          JARVIS_PROVIDER: ${{ steps.inp.outputs.provider }}
+          JARVIS_DRY_RUN: ${{ vars.JARVIS_DRY_RUN || '0' }}
+          DRY_RUN: ${{ vars.DRY_RUN || '0' }}
+          JARVIS_MONTH_SPEND_PCT: ${{ vars.JARVIS_MONTH_SPEND_PCT }}
+          JARVIS_MEMORY_ACTOR: ${{ vars.JARVIS_MEMORY_ACTOR }}
+          JARVIS_MEMORY_TENANT_ID: ${{ vars.JARVIS_MEMORY_TENANT_ID }}
+          JARVIS_MEMORY_USER_ID: ${{ vars.JARVIS_MEMORY_USER_ID }}
+          JARVIS_MEMORY_MAX_SENSITIVITY: ${{ vars.JARVIS_MEMORY_MAX_SENSITIVITY || 'internal' }}
+          JARVIS_ENABLE_SHARED_CONTEXT: ${{ vars.JARVIS_ENABLE_SHARED_CONTEXT || '0' }}
+          NOTION_PAGE_ID: ${{ steps.inp.outputs.notion_page_id }}
+          # --- Provider-nycklar (alla valfria; tomma = hoppa i chain) ---
+          COMET_API_KEY: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.COMET_API_KEY || '' }}
+          GROQ_API_KEY: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.GROQ_API_KEY || '' }}
+          CEREBRAS_API_KEY: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.CEREBRAS_API_KEY || '' }}
+          GOOGLE_AI_API_KEY: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.GOOGLE_AI_API_KEY || '' }}
+          # Both repository enablement and config/huggingface.json must be reviewed.
+          HF_TOKEN: ${{ steps.inp.outputs.provider == 'huggingface' && vars.JARVIS_ENABLE_HUGGINGFACE == '1' && secrets.HF_TOKEN || '' }}
+          JARVIS_ENABLE_HUGGINGFACE: ${{ vars.JARVIS_ENABLE_HUGGINGFACE || '0' }}
+          JARVIS_HF_POLICY_PATH: config/huggingface.json
+          JARVIS_HF_CATALOG_PATH: runtime/huggingface-catalog.json
+          JARVIS_HF_BUDGET_CHECKED_AT: ${{ vars.JARVIS_HF_BUDGET_CHECKED_AT }}
+          JARVIS_NOTIFY: ${{ steps.inp.outputs.provider == 'huggingface' && '0' || '1' }}
+          # Router stays OFF unless explicitly configured and reviewed.
+          PERPLEXITY_API_KEY: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.PERPLEXITY_API_KEY || '' }}
+          JARVIS_ENABLE_PERPLEXITY: ${{ steps.inp.outputs.provider != 'huggingface' && vars.JARVIS_ENABLE_PERPLEXITY || '0' }}
+          JARVIS_ROUTER_DATA_APPROVED: ${{ vars.JARVIS_ROUTER_DATA_APPROVED || '0' }}
+          JARVIS_PERPLEXITY_MODEL: ${{ vars.JARVIS_PERPLEXITY_MODEL }}
+          JARVIS_ROUTER_TIER: ${{ vars.JARVIS_ROUTER_TIER }}
+          JARVIS_ROUTER_MODELS_PATH: ${{ vars.JARVIS_ROUTER_MODELS_PATH }}
+          JARVIS_ROUTER_USD_SEK: ${{ vars.JARVIS_ROUTER_USD_SEK }}
+          JARVIS_ROUTER_QUALITY_INDEX: ${{ vars.JARVIS_ROUTER_QUALITY_INDEX }}
+          # --- Minne (Supabase pgvector) ---
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # --- Notion Control Room ---
+          NOTION_TOKEN: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.NOTION_TOKEN || '' }}
+          NOTION_LOG_PAGE_ID: ${{ secrets.NOTION_LOG_PAGE_ID }}
+          NOTION_DB_BESLUTSLOGG: ${{ secrets.NOTION_DB_BESLUTSLOGG }}
+          NOTION_DB_INITIATIV: ${{ secrets.NOTION_DB_INITIATIV }}
+          NOTION_DB_RADAR: ${{ secrets.NOTION_DB_RADAR }}
+          # --- Slack-alerts ---
+          SLACK_WEBHOOK_URL: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.SLACK_WEBHOOK_URL || '' }}
+          SLACK_BOT_TOKEN: ${{ steps.inp.outputs.provider != 'huggingface' && secrets.SLACK_BOT_TOKEN || '' }}
+          SLACK_USER_ID: ${{ secrets.SLACK_USER_ID }}
+        run: python jarvis_cloud.py
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-result-${{ github.run_id }}
+          path: |
+            result.json
+            result.md
+          if-no-files-found: warn
+          retention-days: 30

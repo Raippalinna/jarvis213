@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "enabled": false,
+  "approval_reference": "",
+  "model_id": "",
+  "provider_id": "",
+  "tier": "LOW",
+  "data_policy_approved": false,
+  "quality_index": null,
+  "quality_evidence": "",
+  "usd_sek_assumption": null,
+  "max_input_tokens": 8192,
+  "max_output_tokens": 600,
+  "max_estimated_cost_sek": null
+}

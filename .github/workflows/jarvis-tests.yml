@@ -1,0 +1,41 @@
+name: Jarvis offline regression tests
+on:
+  push:
+    branches: ["improvement/jarvis-reliability-*"]
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "db/**"
+      - "scripts/**"
+      - "jarvis_cloud.py"
+      - "requirements.txt"
+      - "docs/perplexity/**"
+      - "docs/project-instructions.md"
+      - "supabase/functions/jarvis-comet/**"
+      - ".github/workflows/jarvis-cloud.yml"
+      - ".github/workflows/jarvis-connection-check.yml"
+      - ".github/workflows/jarvis-tests.yml"
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python scripts/check_perplexity_config.py
+      - run: PYTHONPATH=src:. python -m unittest discover -s tests -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tests/sql/package-lock.json
+      - run: npm ci --prefix tests/sql
+      - run: npm test --prefix tests/sql
+      - name: Test Comet endpoint with synthetic fixtures only
+        run: node tests/test_connection_check.mjs

@@ -1,0 +1,5 @@
+Skriv en kort operativ lägesbild på svenska: aktuellt huvudmål, senaste verifierade ändring, viktigaste hinder eller risk och ett konkret nästa steg. Prioritera senaste uttryckliga användarbeslut framför äldre assistentförslag.
+
+Skilj FÖRBERETT, TESTAT LOKALT, SPARAT, DRIFTSATT och VERIFIERAT I DRIFT. Ange datum för tidskänsliga observationer. En öppen PR, sparad prompt eller grön offlinekontroll är inte produktionsdrift. Markera okänd status som okänd.
+
+Nämn bara aktiva, relevanta spår. Återuppta inte avbrutna uppdrag, gamla offerter eller sidoprojekt. Ta med beslut som kräver användaren men inga hemligheter, råa loggar eller onödiga personuppgifter. Använd högst 180 ord.

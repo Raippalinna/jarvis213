@@ -1,0 +1,11 @@
+{
+  "name": "jarvis-approval-sql-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test approval.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
+}
