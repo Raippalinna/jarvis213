@@ -1,0 +1,31 @@
+name: JARVIS connection check
+run-name: Connection check ${{ github.event.client_payload.check_id }}
+
+on:
+  repository_dispatch:
+    types: [jarvis-connection-check]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jarvis-connection-check
+  cancel-in-progress: false
+
+jobs:
+  verify_connection:
+    if: ${{ github.event_name == 'repository_dispatch' && github.event.action == 'jarvis-connection-check' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify event, HF identity, and public model catalog only
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_EXPECTED_USERNAME: rickyraippalinna
+        run: python -m scripts.jarvis_connection_check
