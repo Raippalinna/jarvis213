@@ -1,0 +1,128 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "JARVIS GitHub dispatch (approval-gated)",
+    "version": "0.2.0",
+    "description": "Copilot Studio REST API import candidate. GitHub repository_dispatch is blocked by the existing JARVIS workflow gate until separately approved. Importing this file does not grant access, install a tool, or authorize autonomous execution."
+  },
+  "host": "api.github.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "GitHubAuthorization": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "Use a secure Power Platform connection. Enter the complete header value 'Bearer <token>' only in the protected connection setup, never in a prompt, this file or source control. Restrict GitHub access to this repository with Contents: write."
+    }
+  },
+  "security": [
+    {
+      "GitHubAuthorization": []
+    }
+  ],
+  "paths": {
+    "/repos/rickyraippalinna/jarvis-omega-v2/dispatches": {
+      "post": {
+        "operationId": "dispatchJarvisTask",
+        "summary": "Dispatch JARVIS task only after explicit human approval",
+        "description": "Never invoke automatically. Require explicit human confirmation for every task and separate safety approval before any deployment. HTTP 204 acknowledges receipt only and does not prove execution. Keep JARVIS_REPOSITORY_DISPATCH_ENABLED disabled until reviewed.",
+        "tags": [
+          "JARVIS"
+        ],
+        "parameters": [
+          {
+            "name": "X-GitHub-Api-Version",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "2026-03-10"
+            ],
+            "default": "2026-03-10",
+            "description": "Pinned GitHub REST API version"
+          },
+          {
+            "name": "dispatch",
+            "in": "body",
+            "required": true,
+            "description": "Non-sensitive explicitly approved task. Never include credentials or private information.",
+            "schema": {
+              "type": "object",
+              "required": [
+                "event_type",
+                "client_payload"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "event_type": {
+                  "type": "string",
+                  "enum": [
+                    "jarvis-run"
+                  ],
+                  "description": "Must match the existing workflow's repository_dispatch trigger."
+                },
+                "client_payload": {
+                  "type": "object",
+                  "required": [
+                    "task",
+                    "tier"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "task": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 8000,
+                      "description": "Explicitly approved task, without secrets or sensitive personal data."
+                    },
+                    "tier": {
+                      "type": "string",
+                      "enum": [
+                        "FREE",
+                        "LOW",
+                        "MED",
+                        "HIGH"
+                      ],
+                      "description": "Choose FREE for first approved smoke test. FREE does not guarantee zero external cost."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Optional UUID for tracing. Do not include end-user identifiers."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "GitHub accepted the dispatch request; does not prove that JARVIS ran."
+          },
+          "401": {
+            "description": "Unauthenticated or invalid credentials."
+          },
+          "403": {
+            "description": "Insufficient repository permissions or policy restriction."
+          },
+          "404": {
+            "description": "Repository not accessible to the authenticated account."
+          },
+          "422": {
+            "description": "Invalid dispatch type or payload."
+          }
+        }
+      }
+    }
+  }
+}
