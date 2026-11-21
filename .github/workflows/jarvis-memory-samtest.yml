@@ -1,0 +1,47 @@
+name: Jarvis samtest av PR 5 och PR 26
+on:
+  push:
+    branches: [fix/pytest-src-import-20261101]
+    paths: ['.github/workflows/jarvis-memory-samtest.yml']
+permissions:
+  contents: read
+concurrency:
+  group: jarvis-memory-samtest
+  cancel-in-progress: true
+jobs:
+  memory-samtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      JARVIS_NOTIFY: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 9a5d324455326670db6a6e32d1153de6faa852ed
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Kombinera granskade versioner endast i runnern
+        run: |
+          test "$(git rev-parse HEAD)" = 9a5d324455326670db6a6e32d1153de6faa852ed
+          git cat-file -e '9ef3afc30fdd33d766c0ad3fd9a68f64546ec5c6^{commit}'
+          git -c user.name='Jarvis test runner' -c user.email='jarvis-test@example.invalid' merge --no-commit --no-ff 9ef3afc30fdd33d766c0ad3fd9a68f64546ec5c6
+          git diff --cached --stat
+          git diff --check --cached
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Installera testberoenden utan produktionsnycklar
+        run: python -m pip install -r requirements.txt pytest pytest-subtests pytest-socket
+      - name: Kör hela kombinerade Python-sviten utan PYTHONPATH
+        run: env -u PYTHONPATH python -m pytest tests -q --disable-socket --allow-unix-socket --junitxml=pytest-results.xml
+      - name: Begränsad diagnostik utan rå testtext
+        if: always()
+        run: python scripts/ci_pytest_safe_report.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-samtest-safe-report
+          path: pytest-safe-report.json
+          if-no-files-found: warn
+          retention-days: 7
