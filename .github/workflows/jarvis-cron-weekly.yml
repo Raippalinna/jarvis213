@@ -1,0 +1,21 @@
+name: JARVIS Weekly Ekosystem-Briefing
+
+on:
+  schedule:
+    # Måndag 06:00 Europe/Stockholm = måndag 04:00 UTC (sommartid) / 05:00 UTC (vintertid)
+    # Kör 04:00 UTC för säkerhets skull — 07:00 svensk sommartid är ok
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: jarvis-cron-weekly
+  cancel-in-progress: false
+
+jobs:
+  run:
+    uses: ./.github/workflows/jarvis-cloud.yml
+    with:
+      task: 'Ge veckans ekosystem-briefing enligt RICKY Ω∞ OS-format. Läs hela Jarvis-projektets wiki, hämta status på alla aktiva initiativ (fasadprojekt Kungsgatan 37, Svarar.nu, finans-micro-SaaS, JARVIS Prime, domstolsprocess), identifiera flaskhalsar denna vecka, och ge konkreta rekommendationer med kr-effekt och sannolikhet.'
+      tier: 'MED'
+      notion_page_id: '3ca66d43-c107-813b-90f3-daf5b5a42333'
+    secrets: inherit
