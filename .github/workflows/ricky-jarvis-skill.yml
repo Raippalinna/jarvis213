@@ -1,0 +1,39 @@
+name: Jarvis Control Plane – validera skill
+
+on:
+  pull_request:
+    paths:
+      - 'skills/ricky-jarvis-control-plane/**'
+      - '.github/workflows/ricky-jarvis-skill.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ricky-jarvis-skill-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Skill-format och säkerhetskontrakt
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kör offlinevalidering
+        shell: bash
+        run: python3 skills/ricky-jarvis-control-plane/tests/test_skill.py
+      - name: Kontrollera dokumentation och skydd för hemligheter
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('skills/ricky-jarvis-control-plane')
+          assert (root / 'SKILL.md').is_file()
+          assert (root / 'references/ACCEPTANCE.md').is_file()
+          content = (root / 'SKILL.md').read_text(encoding='utf-8')
+          assert 'ingen merge' in content.lower()
+          assert '0 SEK' in content
+          print('PASS: importfiler och skyddsregler kontrollerade i CI')
+          PY

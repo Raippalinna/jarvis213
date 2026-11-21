@@ -1,0 +1,150 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "JARVIS task dispatch to existing GitHub workflow",
+    "version": "0.1.0",
+    "description": "Import candidate for a Copilot Studio REST tool. This schema does NOT enable GitHub Actions, grant API access or establish a connection. Requires secured per-user or admin-reviewed authentication and explicit approval."
+  },
+  "servers": [
+    {
+      "url": "https://api.github.com"
+    }
+  ],
+  "paths": {
+    "/repos/rickyraippalinna/jarvis-omega-v2/dispatches": {
+      "post": {
+        "operationId": "dispatchJarvisTask",
+        "summary": "Request an explicitly approved JARVIS task",
+        "description": "Creates a GitHub repository_dispatch event (jarvis-run). HTTP 204 only acknowledges event acceptance. Existing workflow is gated by JARVIS_REPOSITORY_DISPATCH_ENABLED and must remain disabled until reviewed. Do not call automatically or with confidential content.",
+        "tags": [
+          "JARVIS"
+        ],
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/vnd.github+json"
+              ],
+              "default": "application/vnd.github+json"
+            }
+          },
+          {
+            "name": "X-GitHub-Api-Version",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "2026-03-10"
+              ],
+              "default": "2026-03-10"
+            }
+          }
+        ],
+        "security": [
+          {
+            "GitHubBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "event_type",
+                  "client_payload"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "event_type": {
+                    "type": "string",
+                    "enum": [
+                      "jarvis-run"
+                    ],
+                    "description": "Must match the existing workflow's repository_dispatch trigger."
+                  },
+                  "client_payload": {
+                    "type": "object",
+                    "required": [
+                      "task",
+                      "tier"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "task": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 8000,
+                        "description": "Explicitly approved task, without secrets or sensitive personal data."
+                      },
+                      "tier": {
+                        "type": "string",
+                        "enum": [
+                          "FREE",
+                          "LOW",
+                          "MED",
+                          "HIGH"
+                        ],
+                        "description": "Choose FREE for first approved smoke test. FREE does not guarantee zero external cost."
+                      },
+                      "request_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Optional UUID for tracing. Do not include end-user identifiers."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "safeTest": {
+                  "summary": "Synthetic dry-run-style request (only after explicit approval)",
+                  "value": {
+                    "event_type": "jarvis-run",
+                    "client_payload": {
+                      "task": "Sammanfatta tre offentliga punkter om systemets arkitektur utan externa utskick.",
+                      "tier": "FREE"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "GitHub accepted the dispatch request; does not prove that JARVIS ran."
+          },
+          "401": {
+            "description": "Unauthenticated or invalid credentials."
+          },
+          "403": {
+            "description": "Insufficient repository permissions or policy restriction."
+          },
+          "404": {
+            "description": "Repository not accessible to the authenticated account."
+          },
+          "422": {
+            "description": "Invalid dispatch type or payload."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "GitHubBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "GitHub access token",
+        "description": "Configure through a secure connection in Copilot Studio/Power Platform. Never paste credentials into this file, prompts, chat messages or source control. Restrict to this repository."
+      }
+    }
+  }
+}
