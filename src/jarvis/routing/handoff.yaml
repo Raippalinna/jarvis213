@@ -1,0 +1,46 @@
+# JARVIS handoff.yaml — manuella premium-kanaler som kräver att Ricky agerar
+# själv i UI. Frugality skickar Slack-DM/Notion-post om besparing >= tröskel
+# OCH estimerad tid <= tröskel. Annars auto-kör Comet.
+
+version: 1
+
+thresholds:
+  min_savings_sek: 5.0
+  max_estimated_task_seconds: 180
+
+channels:
+  m365_copilot_word:
+    display_name: "Microsoft 365 Copilot i Word"
+    triggers: [long_document_draft, report_writing, executive_summary]
+    quality_index: 0.90
+    savings_per_task_sek: 15.0
+    ux_note: "Öppna Word-dokumentet och kör Copilot Chat."
+
+  m365_copilot_excel:
+    display_name: "Microsoft 365 Copilot i Excel"
+    triggers: [formula_generation, data_analysis_excel, financial_model]
+    quality_index: 0.88
+    savings_per_task_sek: 12.0
+    ux_note: "Öppna Excel-arket och kör Copilot Chat."
+
+  m365_copilot_outlook:
+    display_name: "Microsoft 365 Copilot i Outlook"
+    triggers: [email_draft_long, meeting_summary]
+    quality_index: 0.86
+    savings_per_task_sek: 8.0
+    ux_note: "Öppna Outlook och använd Copilot Draft."
+
+  perplexity_pro_search:
+    display_name: "Perplexity Pro Search (din personliga)"
+    triggers: [market_research_interactive]
+    quality_index: 0.92
+    savings_per_task_sek: 3.0
+    ux_note: "Öppna Perplexity.ai och kör Pro Search."
+    reserved_for_human: true      # aldrig autonom, bara vid interaktivt behov
+
+  chatgpt_go:
+    display_name: "ChatGPT Go"
+    triggers: [deep_research_low_volume]
+    quality_index: 0.90
+    savings_per_task_sek: 6.0
+    ux_note: "Öppna chatgpt.com och kör Deep Research."
