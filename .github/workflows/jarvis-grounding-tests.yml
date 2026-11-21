@@ -1,0 +1,44 @@
+name: JARVIS källkontroll offline
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/jarvis/core/supervisor.py'
+      - 'src/jarvis/intelligence/source_references.py'
+      - 'tests/test_grounding_check.py'
+      - 'tests/test_grounding_source_titles.py'
+      - 'jarvis_cloud.py'
+      - '.github/workflows/jarvis-grounding-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jarvis-grounding-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      JARVIS_NOTIFY: '0'
+      PYTHONPATH: src
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Hämta kod
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Installera Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Installera testberoenden
+        run: python -m pip install -r requirements.txt pytest pytest-subtests pytest-socket
+      - name: Kör alla Python-tester utan nätverksåtkomst
+        run: python -m pytest tests -q --disable-socket --allow-unix-socket
+      - name: Kontrollera syntax
+        run: python -m py_compile src/jarvis/core/supervisor.py src/jarvis/intelligence/source_references.py jarvis_cloud.py
