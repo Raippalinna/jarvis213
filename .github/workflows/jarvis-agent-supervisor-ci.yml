@@ -1,0 +1,53 @@
+name: JARVIS Supervisor Agent Bridge offline gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/jarvis/core/supervisor.py'
+      - 'src/jarvis/core/state.py'
+      - 'jarvis_cloud.py'
+      - 'scripts/agent_preview_offline.py'
+      - 'tests/test_supervisor_agent_preview.py'
+      - '.github/workflows/jarvis-agent-supervisor-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  supervisor-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned test runner and core runtime dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt pytest==8.4.2 pytest-socket==0.7.0 pytest-subtests
+      - name: Exercise safe LangGraph bridge and core mission gates offline
+        env:
+          JARVIS_NOTIFY: '0'
+          DRY_RUN: '1'
+        run: |
+          python -m pytest -q tests --disable-socket --allow-unix-socket
+          python -m compileall -q src/jarvis/core scripts/agent_preview_offline.py jarvis_cloud.py
+      - name: Verify standalone preview writes no sensitive task
+        env:
+          JARVIS_PREVIEW_GOAL: 'Synthetic public test JARVIS planning'
+          JARVIS_PREVIEW_CREATIVE: 'true'
+          JARVIS_PREVIEW_NOTIFY: 'false'
+        run: |
+          python scripts/agent_preview_offline.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          raw=Path("agent-preview.json").read_text()
+          data=json.loads(raw)
+          assert data["execution_enabled"] is False
+          assert data["production_verified"] is False
+          assert "Synthetic public test" not in raw
+          assert len(data["agents"]) == 9
+          PY

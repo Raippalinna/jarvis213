@@ -1,0 +1,35 @@
+name: JARVIS multiagent orchestration offline tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/jarvis/core/agent_orchestrator.py'
+      - 'src/jarvis/core/mission_engine.py'
+      - 'tests/test_agent_orchestrator.py'
+      - '.github/workflows/jarvis-agent-orchestration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  multiagent-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated test runner
+        run: python -m pip install --disable-pip-version-check pytest==8.4.2
+      - name: Verify DAG, safety policy and evidence gates with no network
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+          JARVIS_NOTIFY: '0'
+          DRY_RUN: '1'
+        run: |
+          python -m pytest -q tests/test_agent_orchestrator.py tests/test_mission_engine.py
+          python -m py_compile src/jarvis/core/agent_orchestrator.py src/jarvis/core/mission_engine.py
