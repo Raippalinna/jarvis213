@@ -1,0 +1,179 @@
+# JARVIS providers.yaml — leverantörs- och modellkatalog.
+#
+# Redigeras av Frugality-agentens veckovisa audit (frugality/audit.py).
+# Struktur: varje entry beskriver en API-tillgänglig kanal Jarvis kan anropa
+# direkt. Manuella kanaler (M365 Copilot, ChatGPT Go) hanteras separat i
+# handoff.yaml eftersom de kräver att Ricky agerar själv i UI.
+
+version: 2
+updated_at: "2026-08-29"
+
+# ---------------------------------------------------------------------------
+# API-tillgängliga leverantörer (kan anropas autonomt)
+# ---------------------------------------------------------------------------
+providers:
+
+  groq:
+    display_name: "Groq (gratis)"
+    base_url: "https://api.groq.com/openai/v1"
+    api_key_env: "GROQ_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 30
+    latency_p50_ms: 250
+    trains_on_data: true       # dolt läckagerisk
+    models:
+      - id: "llama-3.3-70b-versatile"
+        class: "mid"
+        quality_index: 0.78
+      - id: "deepseek-r1-distill-llama-70b"
+        class: "mid-reasoning"
+        quality_index: 0.82
+
+  cerebras:
+    display_name: "Cerebras (gratis)"
+    base_url: "https://api.cerebras.ai/v1"
+    api_key_env: "CEREBRAS_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 30
+    latency_p50_ms: 120
+    trains_on_data: false
+    models:
+      - id: "llama-3.3-70b"
+        class: "mid"
+        quality_index: 0.78
+
+  google_ai:
+    display_name: "Google AI Studio (gratis)"
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai"
+    api_key_env: "GOOGLE_AI_API_KEY"
+    cost_per_1k_input_sek: 0.0
+    cost_per_1k_output_sek: 0.0
+    rate_limit_rpm: 15
+    latency_p50_ms: 900
+    trains_on_data: true
+    models:
+      - id: "gemini-2.0-flash-exp"
+        class: "mid"
+        quality_index: 0.80
+
+  comet_low:
+    display_name: "Comet (billig)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.0015
+    cost_per_1k_output_sek: 0.006
+    rate_limit_rpm: 200
+    latency_p50_ms: 1500
+    trains_on_data: false
+    models:
+      - id: "gpt-4o-mini"
+        class: "low"
+        quality_index: 0.72
+
+  comet_med:
+    display_name: "Comet (mellan)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.030
+    cost_per_1k_output_sek: 0.150
+    rate_limit_rpm: 100
+    latency_p50_ms: 3500
+    trains_on_data: false
+    models:
+      - id: "claude-3-5-sonnet-20241022"
+        class: "med"
+        quality_index: 0.91
+      - id: "gpt-4o"
+        class: "med"
+        quality_index: 0.88
+
+  comet_high:
+    display_name: "Comet (premium)"
+    base_url: "https://api.cometapi.com/v1"
+    api_key_env: "COMET_API_KEY"
+    cost_per_1k_input_sek: 0.150
+    cost_per_1k_output_sek: 0.750
+    rate_limit_rpm: 30
+    latency_p50_ms: 8000
+    trains_on_data: false
+    models:
+      - id: "claude-opus-4-20250514"
+        class: "high"
+        quality_index: 0.96
+      - id: "o1-preview"
+        class: "high-reasoning"
+        quality_index: 0.95
+
+# ---------------------------------------------------------------------------
+# Tier-mappning — kostnadsdimmern (FREE/LOW/MED/HIGH)
+# Frugality-agenten läser detta för att välja billigaste ADEKVATA väg.
+# Ordningen i chain = fallback-ordning vid fel/rate-limit.
+# ---------------------------------------------------------------------------
+tiers:
+
+  FREE:
+    quality_floor: 0.60
+    max_cost_per_call_sek: 0.10
+    sensitivity_max: "public"       # aldrig känslig data i FREE
+    chain:
+      - provider: cerebras
+        model: "llama-3.3-70b"
+      - provider: groq
+        model: "llama-3.3-70b-versatile"
+      - provider: google_ai
+        model: "gemini-2.0-flash-exp"
+      - provider: comet_low            # sista utväg om alla gratis 429
+        model: "gpt-4o-mini"
+
+  LOW:
+    # 0.70 (var 0.75): LOW-kedjans primärmodell gpt-4o-mini har q=0.72. Med golvet
+    # 0.75 föll varje LOW-körning igenom till LAST-RESORT – samma modell, men utan
+    # kedjans nyckel- och kostnadskontroll och med vilseledande rationale.
+    # Beslut: Ricky 2026-11-05. Ingen ny leverantör, inget ändrat budgettak.
+    quality_floor: 0.70
+    max_cost_per_call_sek: 1.00
+    sensitivity_max: "internal"
+    chain:
+      - provider: comet_low
+        model: "gpt-4o-mini"
+      - provider: groq
+        model: "deepseek-r1-distill-llama-70b"
+
+  MED:
+    quality_floor: 0.85
+    max_cost_per_call_sek: 10.00
+    sensitivity_max: "confidential"
+    chain:
+      # gpt-4o först: claude-3-5-sonnet-20241022 gav 503 model_not_found på
+      # Comet 2026-09-02 (verifierat i produktion) -- behålls som fallback
+      # ifall Comet återinför den, men execute()-kedjan provar den här först
+      # så varje MED-anrop inte behöver göra en misslyckad extra rundtripp.
+      - provider: comet_med
+        model: "gpt-4o"
+      - provider: comet_med
+        model: "claude-3-5-sonnet-20241022"
+
+  HIGH:
+    quality_floor: 0.90
+    max_cost_per_call_sek: 50.00
+    sensitivity_max: "secret"
+    chain:
+      - provider: comet_high
+        model: "claude-opus-4-20250514"
+      - provider: comet_high
+        model: "o1-preview"
+      # comet_med/claude-3-5-sonnet-20241022 gav 503 model_not_found på Comet
+      # 2026-09-02 -- gpt-4o är en fungerande sista utväg istället.
+      - provider: comet_med
+        model: "gpt-4o"
+
+# ---------------------------------------------------------------------------
+# Månadsbudget (Frugality tvingar FREE när tröskel överskrids)
+# ---------------------------------------------------------------------------
+budget:
+  monthly_cap_sek: 200
+  soft_alert_pct: 50
+  hard_alert_pct: 80
+  force_free_pct: 95
