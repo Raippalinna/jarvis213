@@ -1,0 +1,11 @@
+# Endast länkar (ingen nedladdning)
+- Stenhandboken, alla delar: https://www.sten.se/stenhandboken/ (gratis PDF, ingen öppen licens; beslut 2026-10-04: länk och egna sammanfattningar)
+- Getty, Stone Conservation (2010): https://www.getty.edu/conservation/publications_resources/pdf_publications/pdf/stoneconservation.pdf (licens ej verifierad)
+- AMA Hus / MER / MPB / Teknikhandboken: AI-användning förbjuden i Svensk Byggtjänsts villkor. Hänvisa med kod.
+- Stockholmskällan: https://stockholmskallan.stockholm.se/
+- Stadsmuseets klassificering: https://stadsmuseet.stockholm/kunskap-och-samlingar/kulturmiljo/klassificering/
+- Stadsarkivet bygglov 1713–1874: https://sok.stadsarkivet.stockholm.se/?template=view_post&id=319
+- Bygg- och plantjänsten: https://etjanster.stockholm.se/Byggochplantjansten/arenden
+- Bebyggelseregistret: https://www.raa.se/hitta-information/bebyggelseregistret/
+- SGU bergkartvisare: https://www.sgu.se/produkter-och-tjanster/kartor/kartvisaren/bergkartvisare/
+- RAÄ Arkivsök: https://www.raa.se/hitta-information/arkivsok/

@@ -1,0 +1,9 @@
+roll,modell,url,licens_kontrollerad,status,dataklass_tillaten,forsta_test,datum
+handskrift_hist_sv,Riksarkivet/trocr-base-handwritten-hist-swe-2,https://huggingface.co/Riksarkivet/trocr-base-handwritten-hist-swe-2,nej,labb,offentlig;syntetisk,A offentlig 1800-talsritning,2026-10-04
+htr_pipeline,Riksarkivet HTRflow,https://huggingface.co/blog/Gabriel/htrflow,nej,labb,offentlig;syntetisk,A,2026-10-04
+semantisk_sok_sv,KBLab/sentence-bert-swedish-cased,https://huggingface.co/KBLab/sentence-bert-swedish-cased,nej,labb,offentlig;syntetisk;intern(lokalt),sok i sammanfattningar,2026-10-04
+semantisk_sok_multi,BAAI/bge-m3,https://huggingface.co/BAAI/bge-m3,nej,labb,offentlig;syntetisk;intern(lokalt),jamfor KBLab,2026-10-04
+tal_till_text_sv,KBLab KB-Whisper,https://huggingface.co/KBLab,nej,labb,offentlig;syntetisk,egen diktering,2026-10-04
+bildbeskrivning,Florence-2,https://huggingface.co/microsoft/Florence-2-large,nej,labb,offentlig,jamfor granskade exempel,2026-10-04
+sprickdetektering,YOLO-baserade oppna modeller,,nej,vilande,ingen,ingen tills licens last,2026-10-04
+textmodell,Qwen3-235B via nscale,https://huggingface.co/Qwen,ja (pilot 2026-09-23),pilot,offentlig;syntetisk,klar 2026-09-23,2026-10-04

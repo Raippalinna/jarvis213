@@ -1,0 +1,123 @@
+{
+ "paket": "magistern",
+ "version": "0.3",
+ "skapad": "2026-10-04",
+ "lagring": "Dropbox: 00 RICKY - Arbetsyta/JARVIS OCH TITANOS/magistern",
+ "regel": "BTF OneDrive/SharePoint endast lasning",
+ "filer": [
+  {
+   "path": "modeller/MODELLREGISTER.csv",
+   "bytes": 1210,
+   "sha256": "3c8284271a07f2d46870d0553b8dac844b6785840c9a49d760475cc0f0b38fe4",
+   "licensklass": "-"
+  },
+  {
+   "path": "tester/hf/README.md",
+   "bytes": 327,
+   "sha256": "d0564ea5248dcb80fd7dfe46303b02e78a3cd8e4f2686b7c5fb9a4d2090ba053",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/SKILL.md",
+   "bytes": 4161,
+   "sha256": "445ec91e6f3899581a804a3b137421917514bc2844ddc3017761bd75c758c123",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/kallbank-licens.md",
+   "bytes": 4098,
+   "sha256": "7e704d2e087e695eabfd5b6f7f53eb6f5d75f62c3a1a7a4eedef878ad7ed6439",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/hf-modellregister.md",
+   "bytes": 2742,
+   "sha256": "f612740ffc42c1f24a4025fc2cbeef7a5e390f68b35d5dafe5714a67053e8f30",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/material-puts-farg.md",
+   "bytes": 4376,
+   "sha256": "b66c64e80f25f2cf987b798321ddf5302b627eb89d132c31f3c04f63a0926ad1",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/natursten.md",
+   "bytes": 2894,
+   "sha256": "a9134e13356c38cbbb72267b9ecce50fdce74ffc2d1e5643b3c40ad023cc5e65",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/ordlista.md",
+   "bytes": 6125,
+   "sha256": "4342cc47280ef7554eca39c3f69984a65c3e1e49b9103caf75b428c7ee4cb9bf",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/skadeatlas.md",
+   "bytes": 4655,
+   "sha256": "88629c4bbb9a31baeac2ebee1d60a2994f823036035193e7d9d4a351e5cc9c9e",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/references/adressflode.md",
+   "bytes": 2780,
+   "sha256": "d6599fc6fd07f9416e4b6e605c1eacd1af9b631d76bc50a7c430cbee5c6fd86e",
+   "licensklass": "-"
+  },
+  {
+   "path": "skills/byggnadsvard-fasad-magister/templates/materialpass.md",
+   "bytes": 1032,
+   "sha256": "69943a001131364fb184079538ae215fc665eadd2a3dd4ef0dc70655dceb60bf",
+   "licensklass": "-"
+  },
+  {
+   "path": "kallbank/04-endast-lankar/LANKAR.md",
+   "bytes": 1066,
+   "sha256": "1b90d78d8ae5c7f30f0dc85e111dade0c4085ef42ebb6b3c0ab4abf83279fe2e",
+   "licensklass": "04"
+  },
+  {
+   "path": "kallbank/02-public-domain/2003-NPS-preservation-brief-23-ornamental-plaster.pdf",
+   "bytes": 9066917,
+   "sha256": "34db973ece8e60d8f281b9d382f61b9358d0dd4a8438fc8d69f3df9f5a0e9a6b",
+   "licensklass": "02"
+  },
+  {
+   "path": "kallbank/03-intern-referens/RAA-natursten-i-byggnader-varmland-kopparberg.pdf",
+   "bytes": 15921252,
+   "sha256": "f6328ef817272df777b8cf8edad3e193491ce6382e2bd9bc3a274487e123c937",
+   "licensklass": "03"
+  },
+  {
+   "path": "kallbank/03-intern-referens/2008-ICOMOS-ISCS-glossary-stone-deterioration.pdf",
+   "bytes": 6964517,
+   "sha256": "38b402986efb138893064e05002ce946f56e0a8143054b0e53f3d354617cefa3",
+   "licensklass": "03"
+  },
+  {
+   "path": "kallbank/03-intern-referens/RAA-natursten-i-byggnader-goteborg-bohus-halland.pdf",
+   "bytes": 17341474,
+   "sha256": "35984eaf2321e60aca3b5a91e68d81d48f229e185578b65b3c4a89b58dc9a006",
+   "licensklass": "03"
+  },
+  {
+   "path": "kallbank/03-intern-referens/byggnadshyttan-malsaker-1993-1996.pdf",
+   "bytes": 41056580,
+   "sha256": "7c4de57206072a5d71fe48bd2dad4e25e13bff8c7cba1e06cd0c3e10249ad649",
+   "licensklass": "03"
+  },
+  {
+   "path": "kallbank/03-intern-referens/2007-SFV-putsarbeten.pdf",
+   "bytes": 2026253,
+   "sha256": "b9290e11e9ffbc2487631b8fe8a51e018f6590616d2357eb7526d890c51659e3",
+   "licensklass": "03"
+  },
+  {
+   "path": "kallbank/01-cc-by/2008-RAA-malsaker-stuckatur-br2008_13.pdf",
+   "bytes": 2530774,
+   "sha256": "fde46cf2b68a5a68d0ab5a1194f9f43506724453cd065fb8fca3b6f077eccfbd",
+   "licensklass": "01"
+  }
+ ]
+}
