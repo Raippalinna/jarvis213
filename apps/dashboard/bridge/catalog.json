@@ -1,0 +1,307 @@
+{
+  "at": "2026-09-29T14:50:00Z",
+  "connectors": [
+    {
+      "source_id": "amplitude",
+      "name": "Amplitude",
+      "status": "DISCONNECTED",
+      "read_tools": [],
+      "note": "Läsadapter ännu inte verifierad"
+    },
+    {
+      "source_id": "asana_mcp_merge",
+      "name": "Asana",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Pausad enligt ditt tidigare beslut"
+    },
+    {
+      "source_id": "canva",
+      "name": "Canva",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search-designs",
+        "get-design"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "dropbox_mcp",
+      "name": "Dropbox",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_files_v2"
+      ],
+      "note": "Gemensam filsökning"
+    },
+    {
+      "source_id": "files",
+      "name": "Files",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_files_v2"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "github_mcp_direct",
+      "name": "GitHub",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Kodåtkomst finns i Computer; webbadapter återstår"
+    },
+    {
+      "source_id": "gcal",
+      "name": "Gmail with Calendar",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_email",
+        "search_calendar"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "google_cloud_vision_api__pipedream",
+      "name": "Google Cloud Vision",
+      "status": "CONNECTED",
+      "read_tools": [
+        "google_cloud_vision_api-detect-text-in-image"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "google_drive",
+      "name": "Google Drive",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_files_v2"
+      ],
+      "note": "Gemensam filsökning"
+    },
+    {
+      "source_id": "google_photos__pipedream",
+      "name": "Google Photos",
+      "status": "CONNECTED",
+      "read_tools": [
+        "google_photos-get-media-item",
+        "google_photos-list-library-contents"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "hubspot",
+      "name": "HubSpot",
+      "status": "CONNECTED",
+      "read_tools": [
+        "get_user_details",
+        "get_organization_details",
+        "search_crm_objects"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "hugging_face",
+      "name": "Hugging Face",
+      "status": "CONNECTED",
+      "read_tools": [
+        "hub_repo_search",
+        "hub_repo_details"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "jam",
+      "name": "Jam",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search",
+        "getDetails"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "legalzoom",
+      "name": "LegalZoom",
+      "status": "DISCONNECTED",
+      "read_tools": [],
+      "note": "Inte avsedd för svensk juridik"
+    },
+    {
+      "source_id": "linear_native",
+      "name": "Linear",
+      "status": "CONNECTED",
+      "read_tools": [
+        "list_issues",
+        "get_issue"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "lucid",
+      "name": "Lucid",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search",
+        "fetch"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "microsoft_365",
+      "name": "Microsoft 365",
+      "status": "CONNECTED",
+      "read_tools": [
+        "sharepoint_search",
+        "sharepoint_get_file_metadata"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "monday",
+      "name": "Monday.com",
+      "status": "CONNECTED",
+      "read_tools": [
+        "get_board_info",
+        "get_board_items_page",
+        "list_workspaces"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "neon",
+      "name": "Neon",
+      "status": "CONNECTED",
+      "read_tools": [
+        "list_projects",
+        "describe_project"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "notion_mcp",
+      "name": "Notion",
+      "status": "CONNECTED",
+      "read_tools": [
+        "notion-get-tool-access",
+        "notion-ai-search",
+        "notion-search",
+        "notion-fetch"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "outlook",
+      "name": "Outlook",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_email",
+        "search_calendar"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "posthog",
+      "name": "PostHog",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Kodexekvering kräver separat granskning"
+    },
+    {
+      "source_id": "quartr",
+      "name": "Quartr",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search_companies",
+        "get_company",
+        "list_events",
+        "read_transcript"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "finance",
+      "name": "Realtime Finance Data",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Separat finansflöde, inte aktiverat här"
+    },
+    {
+      "source_id": "slack_direct",
+      "name": "Slack",
+      "status": "CONNECTED",
+      "read_tools": [
+        "slack_search_public_and_private",
+        "slack_read_thread"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "spotify__pipedream",
+      "name": "Spotify",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Privat tjänst, inte aktiverad i Jarvis"
+    },
+    {
+      "source_id": "stripe",
+      "name": "Stripe",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Betalningar och ekonomiska åtgärder låsta"
+    },
+    {
+      "source_id": "stytch",
+      "name": "Stytch",
+      "status": "DISCONNECTED",
+      "read_tools": [],
+      "note": "Säkerhetsadministration kräver separat granskning"
+    },
+    {
+      "source_id": "supabase",
+      "name": "Supabase",
+      "status": "CONNECTED",
+      "read_tools": [
+        "get_project",
+        "list_tables",
+        "list_edge_functions"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "vercel",
+      "name": "Vercel",
+      "status": "CONNECTED",
+      "read_tools": [],
+      "note": "Driftsättningsadapter återstår"
+    },
+    {
+      "source_id": "whimsical",
+      "name": "Whimsical",
+      "status": "CONNECTED",
+      "read_tools": [
+        "search",
+        "fetch"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "youtube_analytics_api__pipedream",
+      "name": "YouTube Analytics",
+      "status": "CONNECTED",
+      "read_tools": [
+        "youtube_analytics_api-get-video-metrics"
+      ],
+      "note": ""
+    },
+    {
+      "source_id": "youtube_data_api__pipedream",
+      "name": "YouTube Data",
+      "status": "CONNECTED",
+      "read_tools": [
+        "youtube_data_api-search-videos",
+        "youtube_data_api-channel-statistics"
+      ],
+      "note": ""
+    }
+  ]
+}
