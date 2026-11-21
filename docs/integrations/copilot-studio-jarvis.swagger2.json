@@ -1,0 +1,142 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "JARVIS GitHub dispatch - Copilot Studio Custom Connector",
+    "version": "0.1.0",
+    "description": "Compatibilitetsspecifikation för Power Platform/Swagger 2.0. Endast importkandidat. Aktiverar INTE dispatch-körning; backend och behörigheter måste verifieras."
+  },
+  "host": "api.github.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/repos/rickyraippalinna/jarvis-omega-v2/dispatches": {
+      "post": {
+        "operationId": "dispatchJarvisTask",
+        "summary": "Request an explicitly approved JARVIS task",
+        "description": "Skriver ett repository_dispatch-event till GitHub. Kräver uttryckligt godkänt uppdrag och skyddad anslutning. HTTP 204 innebär bara accepterat event, inte att körning lyckats. Workflow-körning är spärrad som standard.",
+        "tags": [
+          "JARVIS"
+        ],
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "type": "string",
+            "required": false,
+            "default": "application/vnd.github+json",
+            "description": "GitHubs rekommenderade media type."
+          },
+          {
+            "name": "X-GitHub-Api-Version",
+            "in": "header",
+            "type": "string",
+            "required": false,
+            "default": "2026-03-10",
+            "description": "API-version som stöds av GitHub."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Endast manuellt godkänd uppgift utan hemligheter.",
+            "schema": {
+              "$ref": "#/definitions/DispatchRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "GitHub accepted the dispatch request; does not prove that JARVIS ran."
+          },
+          "401": {
+            "description": "Unauthenticated or invalid credentials."
+          },
+          "403": {
+            "description": "Insufficient repository permissions or policy restriction."
+          },
+          "404": {
+            "description": "Repository not accessible to the authenticated account."
+          },
+          "422": {
+            "description": "Invalid dispatch type or payload."
+          }
+        },
+        "security": [
+          {
+            "GitHubAuthorization": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DispatchRequest": {
+      "type": "object",
+      "required": [
+        "event_type",
+        "client_payload"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "jarvis-run"
+          ],
+          "default": "jarvis-run",
+          "description": "Matchar ett redan existerande workflow-event."
+        },
+        "client_payload": {
+          "$ref": "#/definitions/DispatchPayload"
+        }
+      }
+    },
+    "DispatchPayload": {
+      "type": "object",
+      "required": [
+        "task",
+        "tier"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8000,
+          "description": "Explicitly approved task, without secrets or sensitive personal data."
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "FREE",
+            "LOW",
+            "MED",
+            "HIGH"
+          ],
+          "description": "Choose FREE for first approved smoke test. FREE does not guarantee zero external cost."
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Optional UUID for tracing. Do not include end-user identifiers."
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "GitHubAuthorization": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "Värdet i en SÄKER Copilot/Power Platform-anslutning ska vara 'Bearer <GitHub fine-grained token>'. Skriv aldrig token i denna JSON, chatt, prompt eller källkod. Contents: write på enbart rickyraippalinna/jarvis-omega-v2 ger fler möjligheter än denna enda endpoint; granska risk och använd helst en begränsande backend/godkännandeflöde före drift."
+    }
+  }
+}
