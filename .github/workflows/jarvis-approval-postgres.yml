@@ -1,0 +1,64 @@
+name: JARVIS Approval Center PostgreSQL 17 integration (ephemeral)
+
+on:
+  pull_request:
+    paths:
+      - 'docs/security/sql/**'
+      - 'tests/sql/**'
+      - 'src/jarvis/approval/gate.py'
+      - '.github/workflows/jarvis-approval-postgres.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-approval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: synthetic_ci_only
+          POSTGRES_USER: postgres
+          POSTGRES_DB: jarvis_approval_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run true SQL transactions against isolated PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          CID="$(docker ps --filter 'ancestor=postgres:17' -q | head -n 1)"
+          if [ -z "$CID" ]; then echo "Missing isolated PostgreSQL container"; exit 1; fi
+          db() {
+            docker exec -i "$CID" psql -X -v ON_ERROR_STOP=1 \
+              -U postgres -d jarvis_approval_ci "$@"
+          }
+          db < tests/sql/approval_ci_fixture.sql
+          db < docs/security/sql/01_approval_backend_staging.sql
+
+          # Enrollment and ACL cutover MUST refuse an unedited production SQL file.
+          if db < docs/security/sql/03_owner_enrollment_after_auth.sql; then
+            echo "Owner enrollment unexpectedly succeeded without verified Auth ID"; exit 1
+          fi
+          db < tests/sql/approval_db_checks.sql
+          if db < docs/security/sql/02_approval_grants_cutover.sql; then
+            echo "Unsafe cutover unexpectedly succeeded without explicit operator approval"; exit 1
+          fi
+
+          # Override is used EXCLUSIVELY against the ephemeral CI database.
+          sed 's/v_explicit_operator_approval boolean := false/v_explicit_operator_approval boolean := true/' \
+            docs/security/sql/02_approval_grants_cutover.sql | db
+          db < tests/sql/approval_post_cutover.sql
+          echo "POSTGRESQL APPROVAL GATES: PASS (synthetic CI only; no production proof)"
