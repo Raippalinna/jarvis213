@@ -1,0 +1,1 @@
+"""JARVIS approval package \u2014 godmode-grinden mellan intent och exekvering."""
