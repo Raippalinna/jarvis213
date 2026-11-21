@@ -1,0 +1,38 @@
+name: Jarvis ChatGPT handoff säkerhet
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/resolve_jarvis_inputs.py'
+      - 'tests/test_jarvis_input_resolver.py'
+      - '.github/workflows/jarvis-cloud.yml'
+      - 'jarvis_cloud.py'
+      - '.github/workflows/jarvis-handoff-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jarvis-handoff-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  safe-inputs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hämta testbar kod utan sparade autentiseringsuppgifter
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Installera Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Testa offline utan nycklar eller externa tjänster
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python -m unittest discover -s tests -p 'test_jarvis_input_resolver.py' -v
+          python -m py_compile scripts/resolve_jarvis_inputs.py jarvis_cloud.py
